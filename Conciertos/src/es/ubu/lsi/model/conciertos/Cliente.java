@@ -1,6 +1,7 @@
 package es.ubu.lsi.model.conciertos;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Embedded;
@@ -27,7 +28,7 @@ public class Cliente implements Serializable {
     private Set<Compra> compras;
     
     public Cliente() {
-    	
+    	compras = new HashSet<>();
     }
 
 	public String getNif() {

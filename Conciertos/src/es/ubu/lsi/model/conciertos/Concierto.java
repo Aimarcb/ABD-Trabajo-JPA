@@ -2,6 +2,7 @@ package es.ubu.lsi.model.conciertos;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Entity;
@@ -10,6 +11,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 @Entity
 @Table(name="CONCIERTO")
@@ -22,6 +25,7 @@ public class Concierto implements Serializable {
 	private String nombre;
 	private String ciudad;
 	
+	@Temporal (TemporalType.TIMESTAMP)
 	private Date fecha;
 	
 	private int tickets;
@@ -35,7 +39,7 @@ public class Concierto implements Serializable {
 	private Set<Compra> compras;
 	
 	public Concierto() {
-		
+		compras = new HashSet<>();
 	}
 
 	public int getIdConcierto() {

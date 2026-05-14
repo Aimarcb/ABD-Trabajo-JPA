@@ -13,6 +13,9 @@ public class DireccionPostal implements Serializable {
 	private String cp;
 	private String ciudad;
 	
+	public DireccionPostal() {
+	}
+	
 	public DireccionPostal(String direccion, String cp, String ciudad) {
 		this.direccion = direccion;
 		this.cp = cp;

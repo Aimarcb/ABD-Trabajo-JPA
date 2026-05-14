@@ -183,8 +183,8 @@ public class TestClient {
 				System.out.println("\tERROR detecta un error diferente al esperado:  " + ex.getError().toString());
 			}
 		} catch (PersistenceException ex) {
-			logger.error("ERROR en transacción de desactivar con JPA: " + ex.getLocalizedMessage());
-			throw new RuntimeException("Error en desactivar ", ex);
+			logger.error("ERROR en transacción compra con JPA: " + ex.getLocalizedMessage());
+			throw new RuntimeException("Error en comprar ", ex);
 		} catch(Exception ex) {
 			logger.error("ERROR GRAVE de programación en transacción compra con JPA: " + ex.getLocalizedMessage());
 			throw new RuntimeException("Error grave insertando compra", ex);
@@ -401,7 +401,9 @@ public class TestClient {
 			con.commit();
 		} catch (Exception ex) {
 			logger.error("ERROR grave en test. " + ex.getLocalizedMessage());
-			con.rollback();
+			if (con != null) {
+				con.rollback();
+			}
 			throw ex;
 		} finally {
 			cerrarRecursos(con, st, rs);

@@ -1,6 +1,7 @@
 package es.ubu.lsi.model.conciertos;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Entity;
@@ -24,7 +25,7 @@ public class Grupo implements Serializable {
     private Set<Concierto> conciertos;
 	
 	public Grupo() {
-		
+		conciertos = new HashSet<>();
 	}
 
 	public int getIdGrupo() {
