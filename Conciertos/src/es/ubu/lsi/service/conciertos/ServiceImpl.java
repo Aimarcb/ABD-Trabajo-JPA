@@ -15,7 +15,7 @@ import es.ubu.lsi.service.PersistenceService;
 public class ServiceImpl extends PersistenceService implements Service {
 	@Override
 	public void comprar(Date fecha, String nif, int grupo, int tickets) throws PersistenceException {
-		EntityManager em = this.createSession();
+		EntityManager em = this.createSession(); //cada usurio va a empezar una transaccion pero cada usuario no va a empezar una sesin revisar
 		int sigIdCompra = 5;
 		try {
 			beginTransaction(em);
@@ -51,12 +51,10 @@ public class ServiceImpl extends PersistenceService implements Service {
 			compra.setConcierto(concierto);
 			compra.setN_tickets(tickets);
 			compra.setIdCompra(++sigIdCompra); 
-			em.persist(compra); //Para insertar en la BD
 			
-			//Se podría hacer con los setters y un persist. Tiene sentido esto?
 			//Actualizar concierto
-			em.createQuery("update Concierto c set c.tickets = c.tickets - ?1 where c = ?2").setParameter(1, tickets).setParameter(2, concierto).executeUpdate();
-			//En JPQL se puede meter el objeto entero como argumento. También se podría hacer getId de Concierto
+			concierto.setTickets(concierto.getTickets()-tickets);
+			em.persist(compra); //Para insertar en la BD
 			
 			commitTransaction(em);
 		} catch (Exception e) {

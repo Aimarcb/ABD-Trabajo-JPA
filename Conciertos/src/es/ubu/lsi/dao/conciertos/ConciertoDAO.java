@@ -8,15 +8,15 @@ import es.ubu.lsi.dao.JpaDAO;
 import es.ubu.lsi.model.conciertos.Concierto;
 
 public class ConciertoDAO extends JpaDAO<Concierto, Integer>{
-
+	private EntityManager em = null;
 	public ConciertoDAO(EntityManager em) {
 		super(em);
+		this.em = em;
 	}
 
 	@Override
 	public List<Concierto> findAll() {
-		return getEntityManager().createQuery("SELECT c FROM Concierto c", Concierto.class)
-		        .getResultList();
+		return em.createNamedQuery("Concierto.findAll", Concierto.class).getResultList();
 	}
 
 }

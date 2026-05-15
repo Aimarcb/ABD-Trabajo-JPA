@@ -2,28 +2,32 @@ package es.ubu.lsi.model.conciertos;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 @Entity
 @Table(name="COMPRA")
+@NamedQuery(name="Compra.findAll", query="select c from Compra c")
 public class Compra implements Serializable{
 	private static final long serialVersionUID = 1L;
 	
 	@Id
 	private int idCompra;
 	
+	@Column(nullable = false)
 	private int n_tickets;
 	
 	@ManyToOne
-    @JoinColumn(name="NIF")
+    @JoinColumn(name="NIF", nullable=false)
     private Cliente cliente;
 	
 	@ManyToOne
-	@JoinColumn(name="IDCONCIERTO")
+	@JoinColumn(name="IDCONCIERTO", nullable = false)
 	private Concierto concierto;
 	
 	public Compra() {

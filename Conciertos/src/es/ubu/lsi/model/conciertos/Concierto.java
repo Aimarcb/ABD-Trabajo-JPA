@@ -5,10 +5,12 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -16,23 +18,29 @@ import javax.persistence.TemporalType;
 
 @Entity
 @Table(name="CONCIERTO")
+@NamedQuery(name="Concierto.findAll", query="select c from Concierto c")
 public class Concierto implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
 	@Id
 	private int idConcierto;
+	@Column(nullable = false, length = 100)
 	private String nombre;
+	@Column(nullable = false, length = 100)
 	private String ciudad;
 	
 	@Temporal (TemporalType.TIMESTAMP)
+	@Column(nullable = false)
 	private Date fecha;
 	
+	@Column(nullable = false)
 	private int tickets;
+	@Column(nullable = false)
 	private float precio;
 	
 	@ManyToOne
-	@JoinColumn(name="IDGRUPO")
+	@JoinColumn(name="IDGRUPO", nullable=false)
 	private Grupo grupo;
 	
 	@OneToMany(mappedBy="concierto")

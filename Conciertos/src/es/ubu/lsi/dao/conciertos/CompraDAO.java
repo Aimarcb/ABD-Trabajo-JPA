@@ -8,15 +8,15 @@ import es.ubu.lsi.dao.JpaDAO;
 import es.ubu.lsi.model.conciertos.Compra;
 
 public class CompraDAO extends JpaDAO<Compra, Integer>{
-
+	private EntityManager em = null;
 	public CompraDAO(EntityManager em) {
 		super(em);
+		this.em = em;
 	}
 
 	@Override
 	public List<Compra> findAll() {
-		return getEntityManager().createQuery("SELECT c1 FROM Compra c1", Compra.class)
-		        .getResultList();
+		return em.createNamedQuery("Compra.findAll", Compra.class).getResultList();
 	}
 
 }

@@ -2,6 +2,7 @@ package es.ubu.lsi.model.conciertos;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 @Embeddable
@@ -9,8 +10,11 @@ public class DireccionPostal implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
+	@Column(length = 100)
 	private String direccion;
+	@Column(length = 5)
 	private String cp;
+	@Column(length = 20)
 	private String ciudad;
 	
 	public DireccionPostal() {

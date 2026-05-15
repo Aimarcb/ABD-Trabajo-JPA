@@ -4,21 +4,27 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
 @Table(name="CLIENTE")
+@NamedQuery(name="Cliente.findAll", query="select c from Cliente c")
 public class Cliente implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
 	@Id
+	@Column(length = 10)
     private String nif;
+	@Column(nullable = false, length = 50)
 	private String nombre;
+	@Column(nullable = false, length = 100)
     private String apellidos;
     
     @Embedded

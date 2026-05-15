@@ -8,15 +8,15 @@ import es.ubu.lsi.dao.JpaDAO;
 import es.ubu.lsi.model.conciertos.Cliente;
 
 public class ClienteDAO extends JpaDAO<Cliente, String>{
-
+	private EntityManager em = null;
 	public ClienteDAO(EntityManager em) {
 		super(em);
+		this.em = em;
 	}
 
 	@Override
 	public List<Cliente> findAll() {
-		return getEntityManager().createQuery("SELECT c FROM Concierto c", Cliente.class)
-		        .getResultList();
+		return em.createNamedQuery("Cliente.findAll", Cliente.class).getResultList();
 	}
 
 }
