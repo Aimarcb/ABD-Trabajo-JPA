@@ -15,7 +15,7 @@ import es.ubu.lsi.service.PersistenceService;
 public class ServiceImpl extends PersistenceService implements Service {
 	@Override
 	public void comprar(Date fecha, String nif, int grupo, int tickets) throws PersistenceException {
-		EntityManager em = this.createSession(); //cada usurio va a empezar una transaccion pero cada usuario no va a empezar una sesin revisar
+		EntityManager em = this.createSession(); //cada usuario va a empezar una transaccion pero cada usuario no va a empezar una sesin revisar
 		int sigIdCompra = 5;
 		try {
 			beginTransaction(em);
@@ -102,8 +102,29 @@ public class ServiceImpl extends PersistenceService implements Service {
 
 	@Override
 	public List<Grupo> consultarGrupos() throws PersistenceException {
-		// TODO Auto-generated method stub
-		return null;
+		EntityManager em = this.createSession();
+		List<Grupo> resultado = null;
+		
+		try {
+			beginTransaction(em);
+
+			TypedQuery<Grupo> query = em.createQuery(
+				"SELECT DISTINCT g FROM Grupo g " +
+				"LEFT JOIN FETCH g.conciertos con " +
+				"LEFT JOIN FETCH con.compras com " +
+				"LEFT JOIN FETCH com.cliente", 
+				Grupo.class);
+			
+			resultado = query.getResultList();
+
+			commitTransaction(em);
+		} catch (Exception e) {
+			rollbackTransaction(em);
+			throw new PersistenceException("Error al consultar el grafo de grupos", e);
+		} finally {
+			close(em);
+		}
+		return resultado;
 	}
 
 }
