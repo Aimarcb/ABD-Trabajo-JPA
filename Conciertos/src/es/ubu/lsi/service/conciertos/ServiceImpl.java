@@ -20,6 +20,10 @@ public class ServiceImpl extends PersistenceService implements Service {
 		EntityManager em = this.createSession(); //cada usuario va a empezar una transaccion pero cada usuario no va a empezar una sesin revisar
 		int sigIdCompra = 5;
 		try {
+			//Comprobar los tickets
+			if (tickets <= 0) {
+				throw new IncidentException(IncidentError.NOT_AVAILABLE_TICKETS);
+			}
 			beginTransaction(em);
 			//Comprobar grupo
 			Grupo grupoSel = em.find(Grupo.class, grupo); //Según los apuntes es más eficiente
