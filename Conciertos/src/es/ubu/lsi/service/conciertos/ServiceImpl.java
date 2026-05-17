@@ -17,14 +17,14 @@ import es.ubu.lsi.service.PersistenceService;
 public class ServiceImpl extends PersistenceService implements Service {
 	@Override
 	public void comprar(Date fecha, String nif, int grupo, int tickets) throws PersistenceException {
-		EntityManager em = this.createSession(); //cada usuario va a empezar una transaccion pero cada usuario no va a empezar una sesin revisar
-		int sigIdCompra = 5;
+		EntityManager em = this.createSession();
+		int sigIdCompra = 5; //Corresponde a la secuencia de compra. Se ha implementado así para mayor simpleza
 		try {
-			//Comprobar los tickets
-			if (tickets <= 0) {
-				throw new IncidentException(IncidentError.NOT_AVAILABLE_TICKETS);
-			}
 			beginTransaction(em);
+			//Comprobar los tickets del parámetro
+			if (tickets <= 0) {
+				throw new IncidentException(IncidentError.TICKET_PAR_NEGATIVE);
+			}
 			//Comprobar grupo
 			Grupo grupoSel = em.find(Grupo.class, grupo); //Según los apuntes es más eficiente
 			if (grupoSel == null) {
@@ -33,7 +33,7 @@ public class ServiceImpl extends PersistenceService implements Service {
 			
 			//Sacar concierto
 			TypedQuery<Concierto> conciertoQuery = em.createQuery("select c from Concierto c where c.grupo.idGrupo = ?1 and c.fecha = ?2", Concierto.class);
-			conciertoQuery.setParameter(1, grupo);
+			conciertoQuery.setParameter(1, grupo); //Asumimos que un grupo solo tiene un concierto en una fecha, para determinar qué concierto es
 			conciertoQuery.setParameter(2, fecha);
 			List<Concierto> conciertos = conciertoQuery.getResultList();
 			if (conciertos.isEmpty()) {
@@ -45,15 +45,14 @@ public class ServiceImpl extends PersistenceService implements Service {
 				throw new IncidentException(IncidentError.NOT_AVAILABLE_TICKETS);
 			}
 			//Sacar cliente
-			TypedQuery<Cliente> clienteQuery = em.createQuery("select c from Cliente c where c.nif = ?1", Cliente.class);
-			clienteQuery.setParameter(1, nif);
-			List<Cliente> clientes = clienteQuery.getResultList(); 
-			if (clientes.isEmpty()) {
+			Cliente cliente = em.find(Cliente.class, nif); //Según los apuntes es más eficiente
+			if (cliente == null) {
 				throw new IncidentException(IncidentError.NOT_EXIST_CLIENT);
 			}
+
 			//Insertar compra
 			Compra compra = new Compra();
-			compra.setCliente(clientes.get(0));
+			compra.setCliente(cliente);
 			compra.setConcierto(concierto);
 			compra.setN_tickets(tickets);
 			compra.setIdCompra(++sigIdCompra); 
@@ -81,7 +80,7 @@ public class ServiceImpl extends PersistenceService implements Service {
 			if (grupoSel == null) {
 				throw new IncidentException(IncidentError.NOT_EXIST_MUSIC_GROUP);
 			}
-			grupoSel.setActivo(0);
+			grupoSel.setActivo(0); 
 			
 			
 			TypedQuery<Concierto> queryConciertos = em.createQuery("select c from Concierto c where c.grupo.idGrupo=?1", Concierto.class);
@@ -91,11 +90,11 @@ public class ServiceImpl extends PersistenceService implements Service {
 			//Se borran las compras de sus conciertos y sus conciertos
 			Query queryBorrado = em.createQuery("delete from Compra c where c.concierto = ?1");
 			while (i.hasNext()) {
-				queryBorrado.setParameter(1,i.next()).executeUpdate();
+				queryBorrado.setParameter(1,i.next()).executeUpdate(); //Actua directamente sobre la BD
 			}
 			em.createQuery("delete from Concierto c where c.grupo.idGrupo = ?1").setParameter(1, grupo).executeUpdate();
 			
-			em.merge(grupoSel); //Actualiza la versión de la base de datos de esta misma tabla
+			em.merge(grupoSel); //Actualiza la versión de persistencia en función de las que hay en la BD
 			commitTransaction(em);
 		} catch (Exception e) {
 			rollbackTransaction(em);

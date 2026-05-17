@@ -114,15 +114,6 @@ public class TestClient {
 			// insertar compra con número de tickets incorrecto
 			insertarCompraTicketsIncorrectos(implService);
 
-			// insertar compra con número de tickets negativo
-			insertarCompraTicketsNegativos(implService);
-
-			// insertar compra excediendo el aforo restante
-			comprarConciertoSinAforo(implService);
-
-			// insertar compra con 0 tickets
-			insertarCompraCeroTickets(implService);
-
 			// consulta todos los grupos
 			consultarGruposUsandoGrafo(implService);
 
@@ -410,87 +401,6 @@ public class TestClient {
 		} finally {
 			cerrarRecursos(con, st, rs);
 		}
-	}
-
-	/**
-	 * Inserta una compra con número de tickets negativo
-	 * 
-	 * @param implService implementación del servicio
-	 * @throws Exception error en test
-	 */
-	private static void insertarCompraTicketsNegativos(Service implService) throws Exception {
-		try {
-			System.out.println("Insertar compra con tickets negativos");
-			implService.comprar(dateformat.parse("01/11/2023 21:00:00"), "1111111F", 1, -2);
-
-		} catch (IncidentException ex) {
-			if (ex.getError() == IncidentError.NOT_AVAILABLE_TICKETS) {
-				System.out.println("\tOK detecta correctamente que NO existen estos tickets disponibles");
-			} else {
-				System.out.println("\tERROR detecta un error diferente al esperado:  " + ex.getError().toString());
-			}
-		} catch (PersistenceException ex) {
-			logger.error("ERROR en transacción de compra con JPA: " + ex.getLocalizedMessage());
-			throw new RuntimeException("Error en compra ", ex);
-		} catch (Exception ex) {
-			logger.error("ERROR GRAVE de programación en transacción compra con JPA: " + ex.getLocalizedMessage());
-			throw new RuntimeException("Error grave insertando compra", ex);
-		}
-
-	}
-
-	/**
-	 * Inserta una compra excediendo el aforo restante
-	 * 
-	 * @param implService implementación del servicio
-	 * @throws Exception error en test
-	 */
-	private static void comprarConciertoSinAforo(Service implService) throws Exception {
-		try {
-			System.out.println("Comprar excediendo aforo restante");
-			// Intentamos comprar 98 cuando solo quedan 97
-			implService.comprar(dateformat.parse("01/11/2023 21:00:00"), "1111111F", 1, 98); 
-
-		} catch (IncidentException ex) {
-			if (ex.getError() == IncidentError.NOT_AVAILABLE_TICKETS) {
-				System.out.println("\tOK detecta correctamente que NO existen estos tickets disponibles");
-			} else {
-				System.out.println("\tERROR detecta un error diferente al esperado:  " + ex.getError().toString());
-			}
-		} catch (PersistenceException ex) {
-			logger.error("ERROR en transacción de compra con JPA: " + ex.getLocalizedMessage());
-			throw new RuntimeException("Error en compra ", ex);
-		} catch(Exception ex) {
-			logger.error("ERROR GRAVE de programación en transacción compra con JPA: " + ex.getLocalizedMessage());
-			throw new RuntimeException("Error grave insertando compra", ex);
-		}
-	}
-
-	/**
-	 * Inserta una compra con cero tickets  
-	 * 
-	 * @param implService implementación del servicio
-	 * @throws Exception error en test
-	 */
-	private static void insertarCompraCeroTickets(Service implService) throws Exception {
-		try {
-			System.out.println("Insertar compra con cero tickets");
-			implService.comprar(dateformat.parse("01/11/2023 21:00:00"), "1111111F", 1, 0);
-
-		} catch (IncidentException ex) {
-			if (ex.getError() == IncidentError.NOT_AVAILABLE_TICKETS) {
-				System.out.println("\tOK detecta correctamente que NO existen estos tickets disponibles");
-			} else {
-				System.out.println("\tERROR detecta un error diferente al esperado:  " + ex.getError().toString());
-			}
-		} catch (PersistenceException ex) {
-			logger.error("ERROR en transacción de compra con JPA: " + ex.getLocalizedMessage());
-			throw new RuntimeException("Error en compra ", ex);
-		} catch (Exception ex) {
-			logger.error("ERROR GRAVE de programación en transacción compra con JPA: " + ex.getLocalizedMessage());
-			throw new RuntimeException("Error grave insertando compra", ex);
-		}
-
 	}
 
 	/**

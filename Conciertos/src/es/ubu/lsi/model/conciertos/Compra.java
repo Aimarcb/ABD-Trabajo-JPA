@@ -14,6 +14,7 @@ import javax.persistence.Table;
 @Table(name="COMPRA")
 @NamedQuery(name="Compra.findAll", query="select c from Compra c")
 public class Compra implements Serializable{
+
 	private static final long serialVersionUID = 1L;
 	
 	@Id

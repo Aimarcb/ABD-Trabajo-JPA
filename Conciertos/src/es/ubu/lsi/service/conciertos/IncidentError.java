@@ -18,7 +18,8 @@ public enum IncidentError {
 	NOT_EXIST_MUSIC_GROUP("No existe grupo"),
 	NOT_EXIST_CLIENT("No existe cliente"),
 	NOT_AVAILABLE_TICKETS("Número de tickts no disponible"),
-	NOT_EXIST_CONCERT("No existe el concierto para la fecha y el grupo indicado");	
+	NOT_EXIST_CONCERT("No existe el concierto para la fecha y el grupo indicado"),
+	TICKET_PAR_NEGATIVE("El cliente está intentando comprar tickets negativos");	
 	
 
 	

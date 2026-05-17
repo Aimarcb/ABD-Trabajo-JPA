@@ -23,8 +23,7 @@ public class GrupoDAO extends JpaDAO<Grupo, Integer>{
 	public List<Grupo> findAllWithGraph() {
 	    EntityGraph<?> grafo = em.getEntityGraph("Grupo.graph");
 	    
-	    return getEntityManager()
-	        .createNamedQuery("Grupo.findAll", Grupo.class)
+	    return em.createNamedQuery("Grupo.findAll", Grupo.class)
 	        .setHint("javax.persistence.loadgraph", grafo)
 	        .getResultList();
 	}

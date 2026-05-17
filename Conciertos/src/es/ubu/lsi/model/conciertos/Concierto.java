@@ -20,7 +20,7 @@ import javax.persistence.TemporalType;
 @Table(name="CONCIERTO")
 @NamedQuery(name="Concierto.findAll", query="select c from Concierto c")
 public class Concierto implements Serializable {
-	
+
 	private static final long serialVersionUID = 1L;
 	
 	@Id
