@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.persistence.*;
+
+import es.ubu.lsi.dao.conciertos.GrupoDAO;
 import es.ubu.lsi.model.conciertos.Cliente;
 import es.ubu.lsi.model.conciertos.Compra;
 import es.ubu.lsi.model.conciertos.Concierto;
@@ -103,28 +105,22 @@ public class ServiceImpl extends PersistenceService implements Service {
 	@Override
 	public List<Grupo> consultarGrupos() throws PersistenceException {
 		EntityManager em = this.createSession();
-		List<Grupo> resultado = null;
 		
 		try {
 			beginTransaction(em);
 
-			TypedQuery<Grupo> query = em.createQuery(
-				"SELECT DISTINCT g FROM Grupo g " +
-				"LEFT JOIN FETCH g.conciertos con " +
-				"LEFT JOIN FETCH con.compras com " +
-				"LEFT JOIN FETCH com.cliente", 
-				Grupo.class);
-			
-			resultado = query.getResultList();
+	        GrupoDAO grupoDAO = new GrupoDAO(em);
+	        List<Grupo> resultado = grupoDAO.findAllWithGraph();
 
-			commitTransaction(em);
+	        commitTransaction(em);
+	        
+	        return resultado;
 		} catch (Exception e) {
-			rollbackTransaction(em);
-			throw new PersistenceException("Error al consultar el grafo de grupos", e);
-		} finally {
-			close(em);
-		}
-		return resultado;
+	        rollbackTransaction(em);
+	        throw new PersistenceException("Error al consultar el grafo de grupos desde el DAO", e);
+	    } finally {
+	        close(em);
+	    }
 	}
 
 }

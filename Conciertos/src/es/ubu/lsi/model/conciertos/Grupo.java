@@ -7,13 +7,36 @@ import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
 import javax.persistence.NamedQuery;
+import javax.persistence.NamedSubgraph;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
 @Table(name="GRUPO")
 @NamedQuery(name="Grupo.findAll", query="select g from Grupo g")
+@NamedEntityGraph(
+		name = "Grupo.graph",
+		attributeNodes = {
+				@NamedAttributeNode(value = "conciertos", subgraph = "subgrafo.conciertos")
+		},
+		subgraphs = {
+		        @NamedSubgraph(
+		            name = "subgrafo.conciertos",
+		            attributeNodes = {
+		                @NamedAttributeNode(value = "compras", subgraph = "subgrafo.compras")
+		            }
+		        ),
+		        @NamedSubgraph(
+		            name = "subgrafo.compras",
+		            attributeNodes = {
+		                @NamedAttributeNode("cliente")
+		            }
+		        )
+		    }
+)
 public class Grupo implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
