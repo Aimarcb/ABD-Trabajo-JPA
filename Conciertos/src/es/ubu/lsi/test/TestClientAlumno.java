@@ -113,16 +113,16 @@ public class TestClientAlumno {
 			// insertar compra con concierto incorrecto
 			insertarCompraConciertoIncorrecto(implService);
 
-			// insertar compra con número de tickets incorrecto
+			// insertar compra con número de tickets incorrecto. Nuevo
 			insertarCompraTicketsIncorrectos(implService);
 
-			// insertar compra con número de tickets negativo
+			// insertar compra con número de tickets negativo. Nuevo
 			insertarCompraTicketsNegativos(implService);
 
 			// insertar compra excediendo el aforo restante
 			comprarConciertoSinAforo(implService);
 
-			// insertar compra con 0 tickets
+			// insertar compra con 0 tickets. Nuevo
 			insertarCompraCeroTickets(implService);
 
 			// consulta todos los grupos
@@ -130,10 +130,20 @@ public class TestClientAlumno {
 
 			// desactivacion correcta
 			desactivacionCorrecta(implService);
+			
+			// intentar comprar un concierto cuando hay dos simultaneos. Nuevo
+			insertarCompraQueTieneMasDeUnConcierto(implService);
 
 			// desactivacion incorrecta
 			desactivacionIncorrecta(implService);
-
+			
+			// intenta hacer dos compras con el mismo cliente. Según la lógica de negocio planteada por el enunciado,
+			// puede ocurrir. Nuevo
+			insertarDosComprasConElMismoCliente(implService);
+			
+			// comprueba que al desactivar un grupo se eliminen sus conciertos y compras. Nuevo
+			desactivacionEliminaConciertosYCompras(implService);
+			
 		} catch (Exception e) { // for testing code...
 			logger.error(e.getMessage());
 			e.printStackTrace();
@@ -168,6 +178,46 @@ public class TestClientAlumno {
 			throw new RuntimeException("Error grave desactivando grupo ", ex);
 		}
 
+	}
+	
+	private static void desactivacionEliminaConciertosYCompras(Service implService) throws Exception {
+		Connection con = null;
+		Statement st = null;
+		ResultSet rs = null;
+		try {
+			System.out.println("Desactivar grupo eliminando conciertos y compras");
+			implService.desactivar(1);
+
+			con = pool.getConnection();
+			st = con.createStatement();
+
+			// Comprobar que no quedan conciertos del grupo
+			rs = st.executeQuery("select count(*) from concierto where idgrupo = 1");
+			rs.next();
+			int numConciertos = rs.getInt(1);
+			rs.close();
+			
+			// Comprobar que no quedan compras de conciertos del grupo
+			rs = st.executeQuery("select count(*) from compra co join concierto c on co.idconcierto = c.idconcierto where c.idgrupo = 1");
+			rs.next();
+			int numCompras = rs.getInt(1);
+			if (numConciertos == 0 && numCompras == 0) {
+				System.out.println("\tOK eliminados correctamente conciertos y compras");
+			} else {
+				System.out.println("\tERROR no se eliminaron correctamente conciertos o compras");
+				System.out.println("\tConciertos restantes: " + numConciertos);
+				System.out.println("\tCompras restantes: " + numCompras);
+			}
+			con.commit();
+		} catch (Exception ex) {
+			logger.error("ERROR grave en test. " + ex.getLocalizedMessage());
+			if (con != null) {
+				con.rollback();
+			}
+			throw ex;
+		} finally {
+			cerrarRecursos(con, st, rs);
+		}
 	}
 
 	/**
@@ -238,6 +288,35 @@ public class TestClientAlumno {
 		} catch (IncidentException ex) {
 			if (ex.getError() == IncidentError.NOT_EXIST_CONCERT) {
 				System.out.println("\tOK detecta correctamente que NO existe el concierto");
+			} else {
+				System.out.println("\tERROR detecta un error diferente al esperado:  " + ex.getError().toString());
+			}
+		} catch (PersistenceException ex) {
+			logger.error("ERROR en transacción de desactivar con JPA: " + ex.getLocalizedMessage());
+			throw new RuntimeException("Error en compra ", ex);
+		} catch (Exception ex) {
+			logger.error("ERROR GRAVE de programación en transacción compra con JPA: " + ex.getLocalizedMessage());
+			throw new RuntimeException("Error grave compra", ex);
+		}
+
+	}
+	
+	private static void insertarCompraQueTieneMasDeUnConcierto(Service implService) throws Exception {
+		Connection con = pool.getConnection();
+		Statement st = con.createStatement();
+		try {
+			con = pool.getConnection();
+			st = con.createStatement();
+			st.executeUpdate("insert into concierto values (99, 'Duplicado', 'Madrid', TO_TIMESTAMP('01-11-2023 21:00:00', 'DD-MM-YYYY HH24:MI:SS'), 50, 20, 1)");
+			con.commit();
+			
+			System.out.println("Intenta comprar entradas para un concierto cuando se han detectado que 2 coinciden con los datos");
+			implService.comprar(dateformat.parse("01/11/2023 21:00:00"), "1111111F", 1, 3);
+			System.out.println("\tERROR no detecta múltiples conciertos");
+
+		} catch (IncidentException ex) {
+			if (ex.getError() == IncidentError.MORE_THAN_ONE_CONCERT) {
+				System.out.println("\tOK detecta correctamente múltiples conciertos");
 			} else {
 				System.out.println("\tERROR detecta un error diferente al esperado:  " + ex.getError().toString());
 			}
@@ -413,6 +492,26 @@ public class TestClientAlumno {
 			cerrarRecursos(con, st, rs);
 		}
 	}
+	
+	/**
+	 * Se comprueba que realizar dos compras con el mismo cliente no salta error. Esto es para comprobar
+	 * que la secuencia se genera correctamente
+	 * @param implService implementación del servicio
+	 * @throws Exception error en test
+	 */
+	private static void insertarDosComprasConElMismoCliente(Service implService) throws Exception {
+		try {
+			System.out.println("Insertar compra correcta");
+			implService.comprar(dateformat.parse("01/11/2023 21:00:00"), "1111111F", 1, 3);
+			implService.comprar(dateformat.parse("01/11/2023 21:00:00"), "1111111F", 1, 1);
+			
+			System.out.println("\tOK no salta error por hacer ");
+		} catch (Exception ex) {
+			logger.error("ERROR grave en test. " + ex.getLocalizedMessage());
+			throw ex;
+		}
+	}
+	
 
 	/**
 	 * Inserta una compra con número de tickets negativo

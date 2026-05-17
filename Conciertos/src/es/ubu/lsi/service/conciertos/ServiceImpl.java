@@ -15,10 +15,11 @@ import es.ubu.lsi.service.PersistenceException;
 import es.ubu.lsi.service.PersistenceService;
 
 public class ServiceImpl extends PersistenceService implements Service {
+	static int sigIdCompra = 5; //Corresponde a la secuencia de compra. Se ha implementado así para mayor simpleza
+	
 	@Override
 	public void comprar(Date fecha, String nif, int grupo, int tickets) throws PersistenceException {
 		EntityManager em = this.createSession();
-		int sigIdCompra = 5; //Corresponde a la secuencia de compra. Se ha implementado así para mayor simpleza
 		try {
 			beginTransaction(em);
 			//Comprobar los tickets del parámetro
@@ -33,12 +34,16 @@ public class ServiceImpl extends PersistenceService implements Service {
 			
 			//Sacar concierto
 			TypedQuery<Concierto> conciertoQuery = em.createQuery("select c from Concierto c where c.grupo.idGrupo = ?1 and c.fecha = ?2", Concierto.class);
-			conciertoQuery.setParameter(1, grupo); //Asumimos que un grupo solo tiene un concierto en una fecha, para determinar qué concierto es
+			conciertoQuery.setParameter(1, grupo); //Un grupo solo tiene un concierto en una timestamp, para determinar qué concierto es
 			conciertoQuery.setParameter(2, fecha);
 			List<Concierto> conciertos = conciertoQuery.getResultList();
 			if (conciertos.isEmpty()) {
 				throw new IncidentException(IncidentError.NOT_EXIST_CONCERT);
 			}
+			if (conciertos.size() > 1) {
+				throw new IncidentException(IncidentError.MORE_THAN_ONE_CONCERT);
+			}
+			
 			//Comprobar que haya tickets
 			Concierto concierto = conciertos.get(0);
 			if (concierto.getTickets() < tickets) {
@@ -87,7 +92,7 @@ public class ServiceImpl extends PersistenceService implements Service {
 			queryConciertos.setParameter(1, grupo);
 			List<Concierto> conciertos = queryConciertos.getResultList();
 			Iterator<Concierto> i = conciertos.iterator();
-			//Se borran las compras de sus conciertos y sus conciertos
+			//Se borran las líneas de sus conciertos y sus compras
 			Query queryBorrado = em.createQuery("delete from Compra c where c.concierto = ?1");
 			while (i.hasNext()) {
 				queryBorrado.setParameter(1,i.next()).executeUpdate(); //Actua directamente sobre la BD
