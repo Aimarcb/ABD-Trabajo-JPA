@@ -101,7 +101,7 @@ public class TestClientAlumno {
 			implService = new ServiceImpl();
 			System.out.println("Framework y servicio iniciado...");
 
-			// insertar compra correcta
+			// insertar compra correctaimplService
 			insertarCompraCorrecta(implService);
 
 			// insertar compra con grupo incorrecto
@@ -127,28 +127,29 @@ public class TestClientAlumno {
 
 			// consulta todos los grupos
 			consultarGruposUsandoGrafo(implService);
-
-			// desactivacion correcta
-			desactivacionCorrecta(implService);
-			
-			// intentar comprar un concierto cuando hay dos simultaneos. Nuevo
-			insertarCompraQueTieneMasDeUnConcierto(implService);
-
-			// desactivacion incorrecta
-			desactivacionIncorrecta(implService);
 			
 			// intenta hacer dos compras con el mismo cliente. Según la lógica de negocio planteada por el enunciado,
 			// puede ocurrir. Nuevo
 			insertarDosComprasConElMismoCliente(implService);
 			
+			// intentar comprar un concierto cuando hay dos simultaneos. Nuevo
+			insertarCompraQueTieneMasDeUnConcierto(implService);
+				
+			// Validar control estricto de fecha-hora del concierto. Nuevo
+			insertarCompraHoraIncorrecta(implService);
+			
 			// comprueba que al desactivar un grupo se eliminen sus conciertos y compras. Nuevo
 			desactivacionEliminaConciertosYCompras(implService);
+
+			// desactivacion correcta
+			desactivacionCorrecta(implService);
+
+			// desactivacion incorrecta
+			desactivacionIncorrecta(implService);
 			
-			// Insertar compra a grupo desactivado (activo = 0)
+			// Insertar compra a grupo desactivado (activo = 0). Nuevo
 			insertarCompraGrupoDesactivado(implService);
 						
-			// Validar control estricto de fecha-hora del concierto
-			insertarCompraHoraIncorrecta(implService);
 			
 		} catch (Exception e) { // for testing code...
 			logger.error(e.getMessage());
@@ -327,7 +328,7 @@ public class TestClientAlumno {
 				System.out.println("\tERROR detecta un error diferente al esperado:  " + ex.getError().toString());
 			}
 		} catch (PersistenceException ex) {
-			logger.error("ERROR en transacción de desactivar con JPA: " + ex.getLocalizedMessage());
+			logger.error("ERROR en transacción de compra con JPA: " + ex.getLocalizedMessage());
 			throw new RuntimeException("Error en compra ", ex);
 		} catch (Exception ex) {
 			logger.error("ERROR GRAVE de programación en transacción compra con JPA: " + ex.getLocalizedMessage());
@@ -354,7 +355,7 @@ public class TestClientAlumno {
 				System.out.println("\tERROR detecta un error diferente al esperado:  " + ex.getError().toString());
 			}
 		} catch (PersistenceException ex) {
-			logger.error("ERROR en transacción de desactivar con JPA: " + ex.getLocalizedMessage());
+			logger.error("ERROR en transacción de compra con JPA: " + ex.getLocalizedMessage());
 			throw new RuntimeException("Error en desactivar ", ex);
 		} catch (Exception ex) {
 			logger.error("ERROR GRAVE de programación en transacción compra con JPA: " + ex.getLocalizedMessage());
@@ -614,8 +615,8 @@ public class TestClientAlumno {
 			System.out.println("\tERROR: Ha permitido comprar entradas para un grupo desactivado");
 
 		} catch (IncidentException ex) {
-			if (ex.getError() == IncidentError.NOT_EXIST_MUSIC_GROUP) { 
-				System.out.println("\tOK detecta correctamente que el grupo está inactivo/no disponible");
+			if (ex.getError() == IncidentError.NOT_EXIST_CONCERT) { 
+				System.out.println("\tOK detecta correctamente que el grupo está inactivo/no disponible y, por tanto, no tiene conciertos");
 			} else {
 				System.out.println("\tERROR detecta un error diferente al esperado: " + ex.getError().toString());
 			}
