@@ -76,5 +76,10 @@ public class Cliente implements Serializable {
 	public void setCompras(Set<Compra> compras) {
 		this.compras = compras;
 	}
+
+	@Override
+	public String toString() {
+		return "Cliente [nif=" + nif + ", nombre=" + nombre + ", apellidos=" + apellidos + ", direccionPostal=" + direccion + "]";
+	}
     
 }
