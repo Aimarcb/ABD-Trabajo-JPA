@@ -96,4 +96,9 @@ public class Grupo implements Serializable {
 	public void setConciertos(Set<Concierto> conciertos) {
 		this.conciertos = conciertos;
 	}
+	
+	@Override
+	public String toString() {
+		return "Grupo [idgrupo=" + idGrupo + ", nombre=" + nombre + ", estilo=" + estilo + ", activo=" + activo + "]";
+	}
 }
