@@ -144,6 +144,12 @@ public class TestClientAlumno {
 			// comprueba que al desactivar un grupo se eliminen sus conciertos y compras. Nuevo
 			desactivacionEliminaConciertosYCompras(implService);
 			
+			// Insertar compra a grupo desactivado (activo = 0)
+			insertarCompraGrupoDesactivado(implService);
+						
+			// Validar control estricto de fecha-hora del concierto
+			insertarCompraHoraIncorrecta(implService);
+			
 		} catch (Exception e) { // for testing code...
 			logger.error(e.getMessage());
 			e.printStackTrace();
@@ -602,9 +608,9 @@ public class TestClientAlumno {
 	private static void insertarCompraGrupoDesactivado(Service implService) throws Exception {
 		try {
 			System.out.println("Insertar compra para un grupo desactivado (activo = 0)");
-			implService.desactivar(2);
+			implService.desactivar(1);
 			
-			implService.comprar(dateformat.parse("02/11/2023 22:00:00"), "1111111F", 2, 2);
+			implService.comprar(dateformat.parse("02/11/2023 22:00:00"), "1111111F", 1, 2);
 			System.out.println("\tERROR: Ha permitido comprar entradas para un grupo desactivado");
 
 		} catch (IncidentException ex) {
@@ -616,47 +622,6 @@ public class TestClientAlumno {
 		} catch (Exception ex) {
 			logger.error("ERROR grave en test de grupo desactivado: " + ex.getLocalizedMessage());
 			throw ex;
-		}
-	}
-	
-	/**
-	 * Intenta comprar exactamente el número de tickets que quedan para agotar el aforo (Límite).
-	 * @param implService implementación del servicio
-	 * @throws Exception error en test
-	 */
-	private static void comprarAjustandoAforoAlMaximo(Service implService) throws Exception {
-		Connection con = null;
-		Statement st = null;
-		ResultSet rs = null;
-		try {
-			System.out.println("Comprar ajustando las entradas exactamente al aforo restante (Tickets = 0)");
-			
-			con = pool.getConnection();
-			st = con.createStatement();
-			rs = st.executeQuery("SELECT tickets FROM concierto WHERE idconcierto = 3");
-			rs.next();
-			int ticketsRestantes = rs.getInt(1);
-			rs.close();
-			con.commit();
-
-			implService.comprar(dateformat.parse("03/11/2023 21:00:00"), "1111111F", 3, ticketsRestantes);
-			
-			rs = st.executeQuery("SELECT tickets FROM concierto WHERE idconcierto = 3");
-			rs.next();
-			int ticketsFinales = rs.getInt(1);
-			
-			if (ticketsFinales == 0) {
-				System.out.println("\tOK permite agotar el aforo del concierto y lo deja a 0");
-			} else {
-				System.out.println("\tERROR el aforo restante no es 0, es: " + ticketsFinales);
-			}
-			con.commit();
-		} catch (Exception ex) {
-			logger.error("ERROR grave en test de aforo límite: " + ex.getLocalizedMessage());
-			if (con != null) con.rollback();
-			throw ex;
-		} finally {
-			cerrarRecursos(con, st, rs);
 		}
 	}
 
