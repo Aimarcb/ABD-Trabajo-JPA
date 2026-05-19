@@ -66,5 +66,10 @@ public class Compra implements Serializable{
 	public void setConcierto(Concierto concierto) {
 		this.concierto = concierto;
 	}
+
+	@Override
+	public String toString() {
+		return "Compra [idcompra=" + idCompra + ", cliente=" + cliente + ", concierto=" + concierto + ", tickets=" + n_tickets + "]";
+	}
 	
 }
