@@ -593,6 +593,97 @@ public class TestClientAlumno {
 		}
 
 	}
+	
+	/**
+	 * Intenta comprar para un concierto de un grupo que está desactivado (activo = 0).
+	 * @param implService implementación del servicio
+	 * @throws Exception error en test
+	 */
+	private static void insertarCompraGrupoDesactivado(Service implService) throws Exception {
+		try {
+			System.out.println("Insertar compra para un grupo desactivado (activo = 0)");
+			implService.desactivar(2);
+			
+			implService.comprar(dateformat.parse("02/11/2023 22:00:00"), "1111111F", 2, 2);
+			System.out.println("\tERROR: Ha permitido comprar entradas para un grupo desactivado");
+
+		} catch (IncidentException ex) {
+			if (ex.getError() == IncidentError.NOT_EXIST_MUSIC_GROUP) { 
+				System.out.println("\tOK detecta correctamente que el grupo está inactivo/no disponible");
+			} else {
+				System.out.println("\tERROR detecta un error diferente al esperado: " + ex.getError().toString());
+			}
+		} catch (Exception ex) {
+			logger.error("ERROR grave en test de grupo desactivado: " + ex.getLocalizedMessage());
+			throw ex;
+		}
+	}
+	
+	/**
+	 * Intenta comprar exactamente el número de tickets que quedan para agotar el aforo (Límite).
+	 * @param implService implementación del servicio
+	 * @throws Exception error en test
+	 */
+	private static void comprarAjustandoAforoAlMaximo(Service implService) throws Exception {
+		Connection con = null;
+		Statement st = null;
+		ResultSet rs = null;
+		try {
+			System.out.println("Comprar ajustando las entradas exactamente al aforo restante (Tickets = 0)");
+			
+			con = pool.getConnection();
+			st = con.createStatement();
+			rs = st.executeQuery("SELECT tickets FROM concierto WHERE idconcierto = 3");
+			rs.next();
+			int ticketsRestantes = rs.getInt(1);
+			rs.close();
+			con.commit();
+
+			implService.comprar(dateformat.parse("03/11/2023 21:00:00"), "1111111F", 3, ticketsRestantes);
+			
+			rs = st.executeQuery("SELECT tickets FROM concierto WHERE idconcierto = 3");
+			rs.next();
+			int ticketsFinales = rs.getInt(1);
+			
+			if (ticketsFinales == 0) {
+				System.out.println("\tOK permite agotar el aforo del concierto y lo deja a 0");
+			} else {
+				System.out.println("\tERROR el aforo restante no es 0, es: " + ticketsFinales);
+			}
+			con.commit();
+		} catch (Exception ex) {
+			logger.error("ERROR grave en test de aforo límite: " + ex.getLocalizedMessage());
+			if (con != null) con.rollback();
+			throw ex;
+		} finally {
+			cerrarRecursos(con, st, rs);
+		}
+	}
+
+	/**
+	 * Intenta comprar indicando un formato de fecha correcto pero una hora en la que 
+	 * no existe ningún concierto programado para ese grupo.
+	 * @param implService implementación del servicio
+	 * @throws Exception error en test
+	 */
+	private static void insertarCompraHoraIncorrecta(Service implService) throws Exception {
+		try {
+			System.out.println("Insertar compra con fecha válida pero hora sin concierto programado");
+			// El día es correcto para el grupo, pero no la hora (04:00 AM)
+			implService.comprar(dateformat.parse("01/11/2023 04:00:00"), "1111111F", 1, 2);
+			System.out.println("\tERROR: Ha permitido la compra en una hora sin concierto");
+
+		} catch (IncidentException ex) {
+			if (ex.getError() == IncidentError.NOT_EXIST_CONCERT) {
+				System.out.println("\tOK detecta correctamente que no hay concierto programado a esa hora");
+			} else {
+				System.out.println("\tERROR detecta un error diferente al esperado: " + ex.getError().toString());
+			}
+		} catch (Exception ex) {
+			logger.error("ERROR grave en test de hora incorrecta: " + ex.getLocalizedMessage());
+			throw ex;
+		}
+	}
 
 	/**
 	 * Cierra recursos de la transacción.
